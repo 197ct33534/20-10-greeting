@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chúc Mừng Ngày 20/10</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .petal {
+            position: fixed;
+            top: -10vh;
+            /* bắt đầu ở trên màn hình */
+            background-size: cover;
+            width: 30px;
+            height: 30px;
+            opacity: 0.9;
+            animation: fall 12s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0.9;
+            }
+
+            50% {
+                transform: translateY(50vh) translateX(calc(50px * var(--sway))) rotate(180deg);
+                opacity: 0.9;
+            }
+
+            100% {
+                transform: translateY(120vh) translateX(calc(100px * var(--sway))) rotate(360deg);
+                opacity: 0.2;
+            }
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-r from-pink-200 via-purple-200 to-blue-200 min-h-screen flex items-center justify-center">
+    <canvas id="fireworksCanvas"></canvas>
+    <div class="text-center p-6 max-w-md mx-auto bg-white rounded-xl shadow-lg relative z-10">
+        <h1 class="text-4xl font-bold text-pink-600 mb-4 float">💖 Chúc mừng ngày 20/10,bé Diễm 💖</h1>
+        <p class="text-lg text-gray-700 mb-6">Chúc Diễm 20/10 thật xinh đẹp, hạnh phúc và luôn được yêu thương.
+            Riêng anh, anh chỉ muốn nói: may mắn nhất đời anh là được có em. 💗</p>
+        <img src="./img/bouquet_20821167.png" alt="Bouquet" class="mx-auto mb-6 float">
+
+        <div class="flex justify-center gap-4">
+            <button id="showGiftBtn" class="bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600">Nhận quà của
+                anh</button>
+            <input id="photoInput" type="file" accept="image/*" class="hidden">
+        </div>
+
+        <!-- Modal hiển thị ảnh người nhận -->
+        <div id="recipientModal"
+            class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-lg p-4 max-w-md w-full relative">
+                <button id="closeModal" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800">✕</button>
+                <img id="recipientImg" style="transform: rotate(-45deg);" src="" alt="Người nhận"
+                    class="w-full h-auto rounded">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Petal effect with multiple flower types and colors
+        const flowerTypes = [
+            'https://img.icons8.com/?size=100&id=80567&format=png&color=000000', // Default flower
+            'https://img.icons8.com/?size=100&id=XHGA0koO-U3C&format=png&color=000000', // Rose
+            'https://img.icons8.com/?size=100&id=40855&format=png&color=000000', // Sunflower
+            'https://img.icons8.com/?size=100&id=zEiiqvDBZzWZ&format=png&color=000000', 'https://img.icons8.com/?size=100&id=uFl1OpP8eJIr&format=png&color=000000' // Cherry blossom
+        ];
+        const colors = ['#FF6B6B', '#FFD93D', '#6BCB77', '#4D96FF', '#FF9A8B'];
+
+        function createPetals() {
+            for (let i = 0; i < 20; i++) {
+                const petal = document.createElement('div');
+                petal.classList.add('petal');
+                const flower = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
+                petal.style.backgroundImage = `url('${flower}')`;
+                petal.style.backgroundSize = 'cover';
+                petal.style.left = Math.random() * 100 + 'vw';
+                petal.style.top = '-10vh'; // đảm bảo bắt đầu trên cùng
+                petal.style.animationDelay = Math.random() * 10 + 's';
+                // duration khác nhau để không đồng bộ
+                petal.style.animationDuration = (10 + Math.random() * 10) + 's';
+                petal.style.setProperty('--sway', Math.random() * 2 - 1);
+                // Apply random color tint
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                petal.style.filter = `hue-rotate(${Math.random() * 360}deg) saturate(1.1)`;
+                document.body.appendChild(petal);
+                setTimeout(() => petal.remove(), 25000);
+            }
+        }
+
+        // Run petal effect continuously (thời gian tạo hợp lý)
+        createPetals();
+        setInterval(createPetals, 1500);
+
+        // Fireworks effect
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.radius = Math.random() * 2 + 1;
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 8,
+                    y: (Math.random() - 0.5) * 8
+                };
+                this.alpha = 1;
+                this.friction = 0.98;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            update() {
+                this.velocity.x *= this.friction;
+                this.velocity.y *= this.friction;
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= 0.02;
+            }
+        }
+
+        const particles = [];
+
+        function launchFireworks() {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height / 2;
+                    const colors = ['#FF1461', '#18FF92', '#5A87FF', '#FBF38C'];
+                    for (let j = 0; j < 50; j++) {
+                        particles.push(new Particle(x, y, colors[Math.floor(Math.random() * colors.length)]));
+                    }
+                }, i * 200);
+            }
+        }
+
+        // Run fireworks on load
+        launchFireworks();
+        setInterval(launchFireworks, 5000);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((particle, index) => {
+                if (particle.alpha <= 0) {
+                    particles.splice(index, 1);
+                } else {
+                    particle.update();
+                    particle.draw();
+                }
+            });
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // --- Mã JS cho nút "Nhận quà của anh" ---
+        const showBtn = document.getElementById('showGiftBtn');
+        const recipientModal = document.getElementById('recipientModal');
+        const recipientImg = document.getElementById('recipientImg');
+        const closeModalBtn = document.getElementById('closeModal');
+
+        // Đường dẫn tới hình đã gắn sẵn (thay bằng đường dẫn của bạn nếu cần)
+        const presetRecipientImage = './img/nhan.png';
+
+        // Khi nhấn nút, hiển thị ngay hình đã gắn sẵn (không cần upload)
+        showBtn.addEventListener('click', () => {
+            recipientImg.src = presetRecipientImage;
+            recipientModal.classList.remove('hidden');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            recipientModal.classList.add('hidden');
+            recipientImg.src = '';
+        });
+
+        // Đóng modal khi click ngoài nội dung
+        recipientModal.addEventListener('click', (ev) => {
+            if (ev.target === recipientModal) {
+                closeModalBtn.click();
+            }
+        });
+    </script>
+</body>
+
+</html>
